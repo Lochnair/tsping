@@ -1,6 +1,7 @@
 project('tsping', 'c')
 
-argp_dep = dependency('argp', required: get_option('argp_standalone'))
+cc = meson.get_compiler('c')
+argp_dep = cc.find_library('argp', required: get_option('argp_standalone'))
 thread_dep = dependency('threads')
 
 deps = [argp_dep, thread_dep]
