@@ -1,0 +1,1 @@
+option('argp_standalone', type : 'boolean', value : false)
