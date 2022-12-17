@@ -1,4 +1,4 @@
-project('tsping', 'c')
+project('tsping', 'c', version: '1.0')
 
 cc = meson.get_compiler('c')
 argp_dep = cc.find_library('argp', required: get_option('argp_standalone'))
