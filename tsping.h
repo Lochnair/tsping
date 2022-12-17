@@ -1,6 +1,7 @@
 #ifndef TSPING_TSPING_H
 #define TSPING_TSPING_H
 
+#include <stdint.h>
 #include "args.h"
 
 struct icmp_echo_hdr

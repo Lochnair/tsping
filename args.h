@@ -1,3 +1,6 @@
+#include <argp.h>
+#include <arpa/inet.h>
+#include <stdlib.h>
 
 static char doc[] =
 		"tsping -- a simple application to send ICMP echo/timestamp requests";
