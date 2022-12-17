@@ -1,5 +1,3 @@
-const char * tsping_program_version = "tsping 1.0";
-const char * tsping_bug_address = "contact@lochnair.net";
 
 static char doc[] =
 		"tsping -- a simple application to send ICMP echo/timestamp requests";
@@ -7,16 +5,18 @@ static char doc[] =
 static char args_doc[] = "IP1 IP2 IP3 ...";
 
 static struct argp_option options [] = {
-		{"machine-readable", 'm', 0, 0, "Output results in a machine readable format"},
-		{"icmp-echo",  'e', 0,      0,  "Use ICMP echo requests" },
-		{"icmp-ts",    't', 0,      0,  "Use ICMP timestamp requests (default)" },
+		{"machine-readable",    'm',    0,  0, "Output results in a machine readable format"},
+		{"icmp-echo",           'e',    0,  0, "Use ICMP echo requests" },
+		{"icmp-ts",             't',    0,  0, "Use ICMP timestamp requests (default)" },
+        {"target-spacing",   'r',    "TIME",  0, "Time to wait between pinging each target in ms (default 0)"},
+        {"sleep-time",          's',    "TIME",  0, "Time to wait between each round of pinging in ms (default 100)"},
 		{ 0 }
 };
 
 struct arguments
 {
 	struct sockaddr_in * targets;
-	int targets_len, machine_readable, icmp_type;
+	unsigned int targets_len, machine_readable, icmp_type, sleep_time, target_spacing;
 };
 
 /* Parse a single option. */
@@ -38,6 +38,24 @@ parse_opt (int key, char *arg, struct argp_state *state)
 		case 't':
 			arguments->icmp_type = 13;
 			break;
+        case 'r':
+            arguments->target_spacing = strtoul(arg, NULL, 10);
+
+            if (errno == ERANGE || arguments->target_spacing == 0) {
+                printf("Invalid argument: %s\n", arg);
+                return -EINVAL;
+            }
+
+            break;
+        case 's':
+            arguments->sleep_time = strtoul(arg, NULL, 10);
+
+            if (errno == ERANGE || arguments->sleep_time == 0) {
+                printf("Invalid argument: %s\n", arg);
+                return -EINVAL;
+            }
+
+            break;
 		case ARGP_KEY_ARG:
 			arguments->targets = realloc(arguments->targets, (arguments->targets_len + 1) * sizeof(struct sockaddr_in));
 

@@ -18,8 +18,6 @@
 
 #include "tsping.h"
 
-volatile sig_atomic_t exitRequested = 0;
-
 unsigned long sentICMP = 0;
 unsigned long receivedICMP = 0;
 
@@ -144,9 +142,6 @@ void * receiver_loop(void *data)
 
 	while (1)
 	{
-		if (exitRequested)
-			break;
-
 		char * buff = malloc(100);
 		struct sockaddr_in remote_addr;
 		socklen_t addr_len = sizeof(remote_addr);
@@ -219,6 +214,12 @@ void * receiver_loop(void *data)
 	pthread_exit(NULL);
 }
 
+static void milliseconds_to_timespec(struct timespec *timespec, unsigned long ms)
+{
+    timespec->tv_sec = ms / 1000;
+    timespec->tv_nsec = (ms % 1000) * 1000000;
+}
+
 void *sender_loop(void *data)
 {
 	struct thread_data * thread_data = (struct thread_data *)data;
@@ -226,18 +227,20 @@ void *sender_loop(void *data)
 	int sock_fd = thread_data->sock_fd;
 	struct sockaddr_in * targets = args->targets;
 	int targets_len = args->targets_len;
-	struct timespec wait_time;
+	
 
-	wait_time.tv_sec = 1;
-	wait_time.tv_nsec = 0;
+	struct timespec sleep_time = {0}, spacing_time = {0};
+
+	if (args->sleep_time > 0)
+		milliseconds_to_timespec(&sleep_time, args->sleep_time);
+
+	if (args->target_spacing > 0 && args->targets_len > 1)
+		milliseconds_to_timespec(&spacing_time, args->target_spacing);
 
 	uint16_t seq = 0;
 
 	while (1)
 	{
-		if (exitRequested)
-			break;
-
 		for (int i = 0; i < targets_len; i++)
 		{
 			switch (args->icmp_type) {
@@ -248,13 +251,17 @@ void *sender_loop(void *data)
 					send_icmp_timestamp_request(sock_fd, &targets[i], thread_data->id, htons(seq));
 					break;
 				default:
-					printf("sender: Invalid ICMP type: %d, exiting..", args->icmp_type);
-					exit(1);
+					printf("sender: Invalid ICMP type: %u, exiting..\n", args->icmp_type);
+					raise(SIGTERM);
 			}
+
+			if (args->target_spacing > 0 && args->targets_len > 1)
+				nanosleep(&spacing_time, NULL);
 		}
 
 		seq++;
-		nanosleep(&wait_time, NULL);
+		if (args->sleep_time > 0)
+			nanosleep(&sleep_time, NULL);
 	}
 
 	pthread_exit(NULL);
@@ -267,6 +274,8 @@ int main (int argc, char **argv)
 	/* Default values. */
 	arguments.icmp_type = 13; // ICMP timestamps
 	arguments.machine_readable = 0;
+	arguments.sleep_time = 100;
+	arguments.target_spacing = 0;
 	arguments.targets = malloc(sizeof(struct sockaddr_in));
 	arguments.targets_len = 0;
 
@@ -293,15 +302,6 @@ int main (int argc, char **argv)
 	data.id = htons(getpid() & 0xFFFF);
 	data.sock_fd = sock_fd;
 
-	sigset_t signal_set;
-
-    sigemptyset(&signal_set);
-    sigaddset(&signal_set, SIGINT);
-	sigaddset(&signal_set, SIGTERM);
-	sigaddset(&signal_set, SIGQUIT);
-
-	pthread_sigmask(SIG_BLOCK, &signal_set, NULL);
-
 	int t;
 	if ((t = pthread_create(&receiver_thread, NULL, receiver_loop, (void *)&data)) != 0)
 	{
@@ -315,17 +315,9 @@ int main (int argc, char **argv)
 		return 1;
 	}
 
-	int sig;
-    sigwait(&signal_set, &sig);
-	printf("Caught signal %d - shutting down\n", sig);
-	exitRequested = 1;
-
-	// Wait for threads to shut down before freeing allocated memory
+	// Wait for threads to shut down
 	pthread_join(receiver_thread, NULL);
 	pthread_join(sender_thread, NULL);
-
-	close(sock_fd);
-	free(arguments.targets);
 
 	return 0;
 }
