@@ -177,7 +177,7 @@ void * receiver_loop(void *data)
 					printf("%s,%u,%u\n", ip, result.sequence, rtt);
 				}
 				else {
-					printf("%15s : [%u], %u ms\n", ip, result.sequence, rtt);
+					printf("%-15s : [%u], %u ms\n", ip, result.sequence, rtt);
 				}
 
 				receivedICMP++;
@@ -197,7 +197,7 @@ void * receiver_loop(void *data)
 					printf("%s,%u,%u,%u,%u,%u,%u,%u,%u\n", ip, result.sequence, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime, rtt, down_time, up_time);
 				}
 				else {
-					printf("%15s : [%u] Down: %u, Up: %u, RTT: %u, Originate: %u, Received: %u, Transmit: %u, Finished: %u\n", ip, result.sequence, down_time, up_time, rtt, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime);
+					printf("%-15s : [%u] Down: %u, Up: %u, RTT: %u, Originate: %u, Received: %u, Transmit: %u, Finished: %u\n", ip, result.sequence, down_time, up_time, rtt, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime);
 				}
 
 				receivedICMP++;
