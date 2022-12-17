@@ -71,9 +71,7 @@ int send_icmp_echo_request(int sock_fd, struct sockaddr_in *reflector, int id, i
 
 int send_icmp_timestamp_request(int sock_fd, struct sockaddr_in *reflector, int id, int seq)
 {
-	struct icmp_timestamp_hdr hdr;
-
-	memset(&hdr, 0, sizeof(hdr));
+	struct icmp_timestamp_hdr hdr = {0};
 
 	hdr.type = ICMP_TIMESTAMP;
 	hdr.identifier = id;
