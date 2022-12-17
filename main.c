@@ -147,8 +147,9 @@ void * receiver_loop(void *data)
 		socklen_t addr_len = sizeof(remote_addr);
 		int recv = recvfrom(sock_fd, buff, 100, 0, (struct sockaddr *) &remote_addr, &addr_len);
 
-		if (recv < 0)
-			continue;
+		if (recv < 0) {
+			goto skip;
+		}
 
 		// Find the length of the IP header
 		// so we can figure out where in
@@ -168,7 +169,7 @@ void * receiver_loop(void *data)
 				res = parse_icmp_echo_reply(id, hdr, len, recv, &result);
 
 				if (res != 0)
-					continue;
+					goto skip;
 
 				rtt = result.finishedTime - result.originateTime;
 
@@ -186,7 +187,7 @@ void * receiver_loop(void *data)
 				res = parse_icmp_timestamp_reply(id, hdr, len, recv, &result);
 
 				if (res != 0)
-					continue;
+					goto skip;
 
 				uint32_t down_time = result.finishedTime - result.transmitTime;
 				uint32_t up_time = result.receiveTime - result.originateTime;
@@ -203,12 +204,12 @@ void * receiver_loop(void *data)
 
 				break;
 			default:
-				continue;
+				goto skip;
 		}
 
 		
 
-		free(buff);		
+		skip: free(buff);		
 	}
 
 	pthread_exit(NULL);
