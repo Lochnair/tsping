@@ -36,4 +36,17 @@ for any corresponding short options.
 ## OpenWrt
 Currently the Makefile for a package lives over here: https://github.com/Lochnair/openwrt-feeds/blob/main/tsping/Makefile
 If you build your own OpenWrt image, add the repo as a feed and enable the package in the config.
-Alternatively use the OpenWrt SDK to only compile this single package.
+
+Alternatively use the OpenWrt SDK to only compile this single package, example below:
+
+```bash
+wget https://downloads.openwrt.org/releases/22.03.2/targets/octeon/generic/openwrt-sdk-22.03.2-octeon_gcc-11.2.0_musl.Linux-x86_64.tar.xz
+tar xf openwrt-sdk-22.03.2-octeon_gcc-11.2.0_musl.Linux-x86_64.tar.xz
+cd openwrt-sdk-22.03.2-octeon_gcc-11.2.0_musl.Linux-x86_64
+cp -v feeds.conf.default feeds.conf
+echo 'src-git-full lochnair https://github.com/Lochnair/openwrt-feeds.git' >> feeds.conf
+./scripts/feeds update -a
+./scripts/feeds install -a
+make package/tsping/compile
+file bin/packages/mips64_octeonplus/lochnair/tsping_0.1-1_mips64_octeonplus.ipk
+```
