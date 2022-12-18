@@ -1,6 +1,8 @@
 #include <argp.h>
 #include <arpa/inet.h>
+#include <stdint.h>
 #include <stdlib.h>
+#include "strtonum.h"
 
 static char doc[] =
 		"tsping -- a simple application to send ICMP echo/timestamp requests";
@@ -29,6 +31,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	/* Get the input argument from argp_parse, which we
 	   know is a pointer to our arguments structure. */
 	struct arguments *arguments = state->input;
+    const char * errstr;
 
 	switch (key)
 	{
@@ -42,19 +45,19 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			arguments->icmp_type = 13;
 			break;
         case 'r':
-            arguments->target_spacing = strtoul(arg, NULL, 10);
+            arguments->target_spacing = strtonum(arg, 0, UINT32_MAX, &errstr);
 
-            if (errno == ERANGE || arguments->target_spacing == 0) {
-                printf("Invalid argument: %s\n", arg);
+            if (errstr != NULL) {
+                printf("Invalid argument: %s\n", errstr);
                 return -EINVAL;
             }
 
             break;
         case 's':
-            arguments->sleep_time = strtoul(arg, NULL, 10);
+            arguments->sleep_time = strtonum(arg, 0, UINT32_MAX, &errstr);
 
-            if (errno == ERANGE || arguments->sleep_time == 0) {
-                printf("Invalid argument: %s\n", arg);
+            if (errstr != NULL) {
+                printf("Invalid argument: %s\n", errstr);
                 return -EINVAL;
             }
 
