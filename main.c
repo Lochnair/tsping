@@ -1,20 +1,10 @@
 #include <argp.h>
 #include <arpa/inet.h>
-#include <assert.h>
-#include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/socket.h>
-#include <asm/socket.h>
-#include <signal.h>
-#include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#include <linux/net_tstamp.h>
-#include <linux/time_types.h>
 
 #include "tsping.h"
 
@@ -23,7 +13,7 @@ unsigned long receivedICMP = 0;
 
 unsigned long get_time_since_midnight_ms()
 {
-	struct __kernel_timespec time;
+	struct timespec time;
 	clock_gettime(CLOCK_REALTIME, (struct timespec *) &time);
 
 	return (time.tv_sec % 86400 * 1000) + (time.tv_nsec / 1000000);
@@ -251,7 +241,7 @@ void *sender_loop(void *data)
 					break;
 				default:
 					printf("sender: Invalid ICMP type: %u, exiting..\n", args->icmp_type);
-					raise(SIGTERM);
+					pthread_exit(NULL);
 			}
 
 			if (args->target_spacing > 0 && args->targets_len > 1)
