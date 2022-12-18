@@ -314,6 +314,9 @@ int main (int argc, char **argv)
 		return 1;
 	}
 
+	pthread_setname_np(receiver_thread, "receiver");
+	pthread_setname_np(sender_thread, "sender");
+
 	// Wait for threads to shut down
 	pthread_join(receiver_thread, NULL);
 	pthread_join(sender_thread, NULL);
