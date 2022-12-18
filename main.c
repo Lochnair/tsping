@@ -161,7 +161,7 @@ void * receiver_loop(void *data)
 		inet_ntop(AF_INET, &(remote_addr.sin_addr), ip, INET_ADDRSTRLEN);
 
 		int res;
-		uint32_t rtt;
+		int32_t rtt;
 		switch (*hdr) {
 			case 0:
 				res = parse_icmp_echo_reply(id, hdr, len, recv, &result);
@@ -172,10 +172,10 @@ void * receiver_loop(void *data)
 				rtt = result.finishedTime - result.originateTime;
 
 				if (args->machine_readable) {
-					printf("%s,%u,%u\n", ip, result.sequence, rtt);
+					printf("%s,%u,%d\n", ip, result.sequence, rtt);
 				}
 				else {
-					printf("%-15s : [%u], %u ms\n", ip, result.sequence, rtt);
+					printf("%-15s : [%u], %d ms\n", ip, result.sequence, rtt);
 				}
 
 				receivedICMP++;
@@ -187,15 +187,15 @@ void * receiver_loop(void *data)
 				if (res != 0)
 					goto skip;
 
-				uint32_t down_time = result.finishedTime - result.transmitTime;
-				uint32_t up_time = result.receiveTime - result.originateTime;
+				int32_t down_time = result.finishedTime - result.transmitTime;
+				int32_t up_time = result.receiveTime - result.originateTime;
 				rtt = result.finishedTime - result.originateTime;
 
 				if (args->machine_readable) {
-					printf("%s,%u,%u,%u,%u,%u,%u,%u,%u\n", ip, result.sequence, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime, rtt, down_time, up_time);
+					printf("%s,%u,%u,%u,%u,%u,%d,%d,%d\n", ip, result.sequence, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime, rtt, down_time, up_time);
 				}
 				else {
-					printf("%-15s : [%u] Down: %u, Up: %u, RTT: %u, Originate: %u, Received: %u, Transmit: %u, Finished: %u\n", ip, result.sequence, down_time, up_time, rtt, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime);
+					printf("%-15s : [%u] Down: %d, Up: %d, RTT: %d, Originate: %u, Received: %u, Transmit: %u, Finished: %u\n", ip, result.sequence, down_time, up_time, rtt, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime);
 				}
 
 				receivedICMP++;
