@@ -6,7 +6,7 @@ Prerequisites: You'll need a C compiler, Meson and Ninja installed
 ```bash 
 git clone https://github.com/Lochnair/tsping.git
 cd tsping
-meson build builddir
+meson setup builddir
 cd builddir
 meson compile
 ```
