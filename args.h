@@ -10,14 +10,14 @@ static char doc[] =
 static char args_doc[] = "IP1 IP2 IP3 ...";
 
 static struct argp_option options [] = {
-		{"machine-readable",    'm',    0,  0, "Output results in a machine readable format"},
-		{"icmp-echo",           'e',    0,  0, "Use ICMP echo requests" },
-		{"icmp-ts",             't',    0,  0, "Use ICMP timestamp requests (default)" },
-		{"interface",			'i',	"INTERFACE",	0, "Interface to bind to" },
-		{"fw-mark",				'f',	"MARK",	0, "Firewall mark to set on outgoing packets" },
-		{"print-timestamps",	'D',	0,	0, "Print UNIX timestamps for responses" },
-        {"target-spacing",   'r',    "TIME",  0, "Time to wait between pinging each target in ms (default 0)"},
-        {"sleep-time",          's',    "TIME",  0, "Time to wait between each round of pinging in ms (default 100)"},
+		{"fw-mark",				'f',	"MARK",			0,	"Firewall mark to set on outgoing packets" },
+		{"icmp-echo",           'e',    0,  			0,	"Use ICMP echo requests" },
+		{"icmp-ts",             't',    0,  			0,	"Use ICMP timestamp requests (default)" },
+		{"interface",			'i',	"INTERFACE",	0,	"Interface to bind to" },
+		{"machine-readable",    'm',    0,				0,	"Output results in a machine readable format"},
+		{"print-timestamps",	'D',	0,				0,	"Print UNIX timestamps for responses" },
+        {"sleep-time",          's',    "TIME",			0,	"Time to wait between each round of pinging in ms (default 100)"},
+		{"target-spacing",		'r',    "TIME",			0,	"Time to wait between pinging each target in ms (default 0)"},
 		{ 0 }
 };
 
