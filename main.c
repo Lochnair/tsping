@@ -3,6 +3,7 @@
 #include <netinet/ip_icmp.h>
 #include <pthread.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -182,9 +183,19 @@ void * receiver_loop(void *data)
 				rtt = result.finishedTime - result.originateTime;
 
 				if (args->machine_readable) {
+					if (args->print_timestamps) {
+						struct timeval recv_time;
+						gettimeofday(&recv_time, NULL);
+						printf("%lu.%06lu,", (unsigned long)recv_time.tv_sec, (unsigned long)recv_time.tv_usec);
+					}
 					printf("%s,%u,%u,%u,%u,%u,%d,%d,%d\n", ip, result.sequence, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime, rtt, down_time, up_time);
 				}
 				else {
+					if (args->print_timestamps) {
+						struct timeval recv_time;
+						gettimeofday(&recv_time, NULL);
+						printf("[%lu.%06lu] ", (unsigned long)recv_time.tv_sec, (unsigned long)recv_time.tv_usec);
+					}
 					printf("%-15s : [%u] Down: %d, Up: %d, RTT: %d, Originate: %u, Received: %u, Transmit: %u, Finished: %u\n", ip, result.sequence, down_time, up_time, rtt, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime);
 				}
 
@@ -263,6 +274,7 @@ int main (int argc, char **argv)
 	/* Default values. */
 	arguments.icmp_type = 13; // ICMP timestamps
 	arguments.machine_readable = 0;
+	arguments.print_timestamps = 0;
 	arguments.sleep_time = 100;
 	arguments.target_spacing = 0;
 	arguments.targets = malloc(sizeof(struct sockaddr_in));

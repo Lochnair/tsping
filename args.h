@@ -13,6 +13,7 @@ static struct argp_option options [] = {
 		{"machine-readable",    'm',    0,  0, "Output results in a machine readable format"},
 		{"icmp-echo",           'e',    0,  0, "Use ICMP echo requests" },
 		{"icmp-ts",             't',    0,  0, "Use ICMP timestamp requests (default)" },
+		{"print-timestamps",	'D',	0,	0, "Print UNIX timestamps for responses" },
         {"target-spacing",   'r',    "TIME",  0, "Time to wait between pinging each target in ms (default 0)"},
         {"sleep-time",          's',    "TIME",  0, "Time to wait between each round of pinging in ms (default 100)"},
 		{ 0 }
@@ -21,7 +22,7 @@ static struct argp_option options [] = {
 struct arguments
 {
 	struct sockaddr_in * targets;
-	unsigned int targets_len, machine_readable, icmp_type, sleep_time, target_spacing;
+	unsigned int targets_len, machine_readable, print_timestamps, icmp_type, sleep_time, target_spacing;
 };
 
 /* Parse a single option. */
@@ -43,6 +44,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			break;
 		case 't':
 			arguments->icmp_type = 13;
+			break;
+		case 'D':
+			arguments->print_timestamps = 1;
 			break;
         case 'r':
             arguments->target_spacing = strtonum(arg, 0, UINT32_MAX, &errstr);
