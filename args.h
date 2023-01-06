@@ -23,9 +23,15 @@ static struct argp_option options [] = {
 
 struct arguments
 {
-	struct sockaddr_in * targets;
-	unsigned int targets_len, fw_mark, machine_readable, print_timestamps, icmp_type, sleep_time, target_spacing;
-	char * interface;
+	unsigned int			fw_mark;
+	unsigned int			icmp_type;
+	char * 					interface;
+	unsigned int			machine_readable;
+	unsigned int			print_timestamps;
+	unsigned int			sleep_time;
+	unsigned int			target_spacing;
+	struct sockaddr_in *	targets;
+	unsigned int			targets_len;
 };
 
 /* Parse a single option. */
