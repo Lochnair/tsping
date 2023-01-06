@@ -2,6 +2,7 @@
 #include <arpa/inet.h>
 #include <netinet/ip_icmp.h>
 #include <pthread.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <time.h>
@@ -272,7 +273,9 @@ int main (int argc, char **argv)
 	struct arguments arguments;
 
 	/* Default values. */
+	arguments.fw_mark = 0;
 	arguments.icmp_type = 13; // ICMP timestamps
+	arguments.interface = "";
 	arguments.machine_readable = 0;
 	arguments.print_timestamps = 0;
 	arguments.sleep_time = 100;
@@ -298,6 +301,20 @@ int main (int argc, char **argv)
 	{
 		printf("Couldn't open raw socket (are you root?)\n");
 		return 1;
+	}
+
+	if (arguments.fw_mark > 0) {
+		int err = setsockopt(sock_fd, SOL_SOCKET, SO_MARK, &arguments.fw_mark, sizeof(arguments.fw_mark));
+
+		if (err != 0)
+			fprintf(stderr, "Couldn't set fw mark on socket: %d\n", ret);
+	}
+
+	if (strlen(arguments.interface) > 0) {
+		int err = setsockopt(sock_fd, SOL_SOCKET, SO_BINDTODEVICE, arguments.interface, strlen(arguments.interface));
+
+		if (err != 0)
+			fprintf(stderr, "Couldn't bind socket to interface: %d\n", ret);
 	}
 
 	struct thread_data data;

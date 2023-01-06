@@ -13,6 +13,8 @@ static struct argp_option options [] = {
 		{"machine-readable",    'm',    0,  0, "Output results in a machine readable format"},
 		{"icmp-echo",           'e',    0,  0, "Use ICMP echo requests" },
 		{"icmp-ts",             't',    0,  0, "Use ICMP timestamp requests (default)" },
+		{"interface",			'i',	"INTERFACE",	0, "Interface to bind to" },
+		{"fw-mark",				'f',	"MARK",	0, "Firewall mark to set on outgoing packets" },
 		{"print-timestamps",	'D',	0,	0, "Print UNIX timestamps for responses" },
         {"target-spacing",   'r',    "TIME",  0, "Time to wait between pinging each target in ms (default 0)"},
         {"sleep-time",          's',    "TIME",  0, "Time to wait between each round of pinging in ms (default 100)"},
@@ -22,7 +24,8 @@ static struct argp_option options [] = {
 struct arguments
 {
 	struct sockaddr_in * targets;
-	unsigned int targets_len, machine_readable, print_timestamps, icmp_type, sleep_time, target_spacing;
+	unsigned int targets_len, fw_mark, machine_readable, print_timestamps, icmp_type, sleep_time, target_spacing;
+	char * interface;
 };
 
 /* Parse a single option. */
@@ -41,6 +44,18 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			break;
 		case 'e':
 			arguments->icmp_type = 8;
+			break;
+		case 'f':
+			arguments->fw_mark = strtonum(arg, 0, UINT32_MAX, &errstr);
+
+            if (errstr != NULL) {
+                printf("Invalid argument: %s\n", errstr);
+                return -EINVAL;
+            }
+
+            break;
+		case 'i':
+			arguments->interface = arg;
 			break;
 		case 't':
 			arguments->icmp_type = 13;
