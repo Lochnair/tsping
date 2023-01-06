@@ -51,7 +51,7 @@ int send_icmp_echo_request(int sock_fd, struct sockaddr_in *reflector, int id, i
 
 	if ((t = sendto(sock_fd, &hdr, sizeof(hdr), 0, (const struct sockaddr *)reflector, sizeof(*reflector))) == -1)
 	{
-		printf("something wrong: %d\n", t);
+		fprintf(stderr, "Something went wrong while sending: %d\n", t);
 		return 1;
 	}
 
@@ -75,7 +75,7 @@ int send_icmp_timestamp_request(int sock_fd, struct sockaddr_in *reflector, int 
 
 	if ((t = sendto(sock_fd, &hdr, sizeof(hdr), 0, (const struct sockaddr *)reflector, sizeof(*reflector))) == -1)
 	{
-		printf("something wrong: %d\n", t);
+		fprintf(stderr, "Something went wrong while sending: %d\n", t);
 		return 1;
 	}
 
@@ -251,7 +251,7 @@ void *sender_loop(void *data)
 					send_icmp_timestamp_request(sock_fd, &targets[i], thread_data->id, htons(seq));
 					break;
 				default:
-					printf("sender: Invalid ICMP type: %u, exiting..\n", args->icmp_type);
+					fprintf(stderr, "sender: Invalid ICMP type: %u, exiting..\n", args->icmp_type);
 					pthread_exit(NULL);
 			}
 
@@ -287,6 +287,8 @@ int main (int argc, char **argv)
 	if (ret != 0)
 		return ret;
 
+	fprintf(stderr, "Starting tsping 0.1 - pinging %u targets\n", arguments.targets_len);
+
 	pthread_t receiver_thread;
 	pthread_t sender_thread;
 
@@ -306,13 +308,13 @@ int main (int argc, char **argv)
 	int t;
 	if ((t = pthread_create(&receiver_thread, NULL, receiver_loop, (void *)&data)) != 0)
 	{
-		printf("Failed to create receiver thread: %d\n", t);
+		fprintf(stderr, "Failed to create receiver thread: %d\n", t);
 		return 1;
 	}
 
 	if ((t = pthread_create(&sender_thread, NULL, sender_loop, (void *)&data)) != 0)
 	{
-		printf("Failed to create sender thread: %d\n", t);
+		fprintf(stderr, "Failed to create sender thread: %d\n", t);
 		return 1;
 	}
 
