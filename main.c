@@ -242,6 +242,10 @@ void *sender_loop(void *data)
 
 	while (1)
 	{
+		if (sentICMP > 0 && sentICMP % 100 == 0 && receivedICMP == 0) {
+			fprintf(stderr, "Warning: We've sent %lu packets, but received none.\n", sentICMP);
+		}
+
 		for (int i = 0; i < targets_len; i++)
 		{
 			switch (args->icmp_type) {
