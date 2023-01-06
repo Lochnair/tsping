@@ -19,7 +19,10 @@ You should now have a 'tsping' binary in builddir.
 Usage: tsping [OPTION...] IP1 IP2 IP3 ...
 tsping -- a simple application to send ICMP echo/timestamp requests
 
+  -D, --print-timestamps     Print UNIX timestamps for responses
   -e, --icmp-echo            Use ICMP echo requests
+  -f, --fw-mark=MARK         Firewall mark to set on outgoing packets
+  -i, --interface=INTERFACE  Interface to bind to
   -m, --machine-readable     Output results in a machine readable format
   -r, --target-spacing=TIME  Time to wait between pinging each target in ms
                              (default 0)
