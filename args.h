@@ -39,8 +39,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
 	switch (key)
 	{
-		case 'm':
-			arguments->machine_readable = 1;
+		case 'D':
+			arguments->print_timestamps = 1;
 			break;
 		case 'e':
 			arguments->icmp_type = 8;
@@ -57,13 +57,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
 		case 'i':
 			arguments->interface = arg;
 			break;
-		case 't':
-			arguments->icmp_type = 13;
+		case 'm':
+			arguments->machine_readable = 1;
 			break;
-		case 'D':
-			arguments->print_timestamps = 1;
-			break;
-        case 'r':
+		case 'r':
             arguments->target_spacing = strtonum(arg, 0, UINT32_MAX, &errstr);
 
             if (errstr != NULL) {
@@ -81,6 +78,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
             }
 
             break;
+		case 't':
+			arguments->icmp_type = 13;
+			break;
+		
 		case ARGP_KEY_ARG:
 			arguments->targets = realloc(arguments->targets, (arguments->targets_len + 1) * sizeof(struct sockaddr_in));
 
