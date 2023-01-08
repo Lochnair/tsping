@@ -310,15 +310,19 @@ int main (int argc, char **argv)
 	if (arguments.fw_mark > 0) {
 		int err = setsockopt(sock_fd, SOL_SOCKET, SO_MARK, &arguments.fw_mark, sizeof(arguments.fw_mark));
 
-		if (err != 0)
-			fprintf(stderr, "Couldn't set fw mark on socket: %d\n", ret);
+		if (err != 0) {
+			fprintf(stderr, "Couldn't set fw mark %u on socket: %s\n", arguments.fw_mark, strerror(errno));
+			exit(1);
+		}
 	}
 
 	if (strlen(arguments.interface) > 0) {
 		int err = setsockopt(sock_fd, SOL_SOCKET, SO_BINDTODEVICE, arguments.interface, strlen(arguments.interface));
 
-		if (err != 0)
-			fprintf(stderr, "Couldn't bind socket to interface: %d\n", ret);
+		if (err != 0) {
+			fprintf(stderr, "Couldn't bind socket to interface %s: %s\n", arguments.interface, strerror(errno));
+			exit(1);
+		}
 	}
 
 	struct thread_data data;
