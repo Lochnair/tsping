@@ -156,6 +156,9 @@ void * receiver_loop(void *data)
 		int32_t rtt;
 		switch (*hdr) {
 			case 0:
+				if (args->icmp_type != 8)
+					goto skip;
+
 				res = parse_icmp_echo_reply(id, hdr, len, recv, &result);
 
 				if (res != 0)
@@ -174,6 +177,9 @@ void * receiver_loop(void *data)
 
 				break;
 			case 14:
+				if (args->icmp_type != 13)
+					goto skip;
+
 				res = parse_icmp_timestamp_reply(id, hdr, len, recv, &result);
 
 				if (res != 0)
