@@ -183,7 +183,9 @@ void * receiver_loop(void *data)
 
 	if (args->machine_readable == 1 && args->delimiter != ',') {
 		char_replace(FMT_OUTPUT, ',', args->delimiter);
-		char_replace(FMT_TIMESTAMP, ',', args->delimiter);
+
+		if (FMT_TIMESTAMP != NULL)
+			char_replace(FMT_TIMESTAMP, ',', args->delimiter);
 	}
 
 	while (1)
