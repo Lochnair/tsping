@@ -13,6 +13,19 @@
 unsigned long sentICMP = 0;
 unsigned long receivedICMP = 0;
 
+int char_replace(char *str, char find, char rep) {
+    char *current_pos = strchr(str,find);
+	int n = 0;
+
+    while (current_pos) {
+        *current_pos = rep;
+		n++;
+        current_pos = strchr(current_pos,find);
+    }
+
+    return n;
+}
+
 unsigned long get_time_since_midnight_ms()
 {
 	struct timespec time;
@@ -164,6 +177,11 @@ void * receiver_loop(void *data)
 	else if (args->print_timestamps == 1 && args->machine_readable == 1)
 		FMT_TIMESTAMP = FMT_TIMESTAMPS_MACHINE;
 
+	if (args->machine_readable == 1 && args->delimiter != ',') {
+		char_replace(FMT_OUTPUT, ',', args->delimiter);
+		char_replace(FMT_TIMESTAMP, ',', args->delimiter);
+	}
+
 	while (1)
 	{
 		char * buff = malloc(100);
@@ -301,6 +319,7 @@ int main (int argc, char **argv)
 	struct arguments arguments;
 
 	/* Default values. */
+	arguments.delimiter = ',';
 	arguments.fw_mark = 0;
 	arguments.icmp_type = 13; // ICMP timestamps
 	arguments.interface = "";

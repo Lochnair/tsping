@@ -10,19 +10,20 @@ static char doc[] =
 static char args_doc[] = "IP1 IP2 IP3 ...";
 
 static struct argp_option options [] = {
-		{"fw-mark",				'f',	"MARK",			0,	"Firewall mark to set on outgoing packets" },
-		{"icmp-echo",           'e',    0,  			0,	"Use ICMP echo requests" },
-		{"icmp-ts",             't',    0,  			0,	"Use ICMP timestamp requests (default)" },
-		{"interface",			'i',	"INTERFACE",	0,	"Interface to bind to" },
-		{"machine-readable",    'm',    0,				0,	"Output results in a machine readable format"},
-		{"print-timestamps",	'D',	0,				0,	"Print UNIX timestamps for responses" },
-        {"sleep-time",          's',    "TIME",			0,	"Time to wait between each round of pinging in ms (default 100)"},
-		{"target-spacing",		'r',    "TIME",			0,	"Time to wait between pinging each target in ms (default 0)"},
+		{"fw-mark",				'f',	"MARK",			0,						"Firewall mark to set on outgoing packets" },
+		{"icmp-echo",           'e',    0,  			0,						"Use ICMP echo requests" },
+		{"icmp-ts",             't',    0,  			0,						"Use ICMP timestamp requests (default)" },
+		{"interface",			'i',	"INTERFACE",	0,						"Interface to bind to" },
+		{"machine-readable",    'm',    "DELIMITER",	OPTION_ARG_OPTIONAL,	"Output results in a machine readable format"},
+		{"print-timestamps",	'D',	0,				0,						"Print UNIX timestamps for responses" },
+        {"sleep-time",          's',    "TIME",			0,						"Time to wait between each round of pinging in ms (default 100)"},
+		{"target-spacing",		'r',    "TIME",			0,						"Time to wait between pinging each target in ms (default 0)"},
 		{ 0 }
 };
 
 struct arguments
 {
+	char					delimiter;
 	unsigned int			fw_mark;
 	unsigned int			icmp_type;
 	char * 					interface;
@@ -65,6 +66,16 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			break;
 		case 'm':
 			arguments->machine_readable = 1;
+			
+			if (arg != NULL) {
+				if(strlen(arg) > 1) {
+					printf("Too long delimiter: %s\n", arg);
+					return -EINVAL;
+				}
+
+				arguments->delimiter = *arg;
+			}
+
 			break;
 		case 'r':
             arguments->target_spacing = strtonum(arg, 0, UINT32_MAX, &errstr);
