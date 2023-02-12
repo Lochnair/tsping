@@ -123,12 +123,46 @@ int parse_icmp_timestamp_reply(uint16_t id, char * buff, int len, int recv, icmp
 	return 0;
 }
 
+static void print_timestamp(char * fmt) {
+	struct timeval recv_time;
+	gettimeofday(&recv_time, NULL);
+	printf(fmt, (unsigned long) recv_time.tv_sec, (unsigned long) recv_time.tv_usec);
+}
+
 void * receiver_loop(void *data)
 {
 	struct thread_data * thread_data = (struct thread_data *) data;
 	struct arguments * args = thread_data->args;
 	int sock_fd = thread_data->sock_fd;
 	uint16_t id = htons(getpid() & 0xFFFF);
+
+	char FMT_ICMP_ECHO_HUMAN[] = "%-15s : [%u], %d ms\n";
+	char FMT_ICMP_ECHO_MACHINE[] = "%s,%u,%d\n";
+	char FMT_ICMP_TIMESTAMP_HUMAN[] = "%-15s : [%u] Down: %d, Up: %d, RTT: %d, Originate: %u, Received: %u, Transmit: %u, Finished: %u\n";
+	char FMT_ICMP_TIMESTAMP_MACHINE[] = "%s,%u,%u,%u,%u,%u,%d,%d,%d\n";
+	char FMT_TIMESTAMPS_HUMAN[] = "[%lu.%06lu] ";
+	char FMT_TIMESTAMPS_MACHINE[] = "%lu.%06lu,";
+
+	char * FMT_OUTPUT;
+	char * FMT_TIMESTAMP;
+
+	if (args->icmp_type == 8 && args->machine_readable == 0)
+		FMT_OUTPUT = FMT_ICMP_ECHO_HUMAN;
+	else if (args->icmp_type == 8 && args->machine_readable == 1)
+		FMT_OUTPUT = FMT_ICMP_ECHO_MACHINE;
+	else if (args->icmp_type == 13 && args->machine_readable == 0)
+		FMT_OUTPUT = FMT_ICMP_TIMESTAMP_HUMAN;
+	else if (args->icmp_type == 13 && args->machine_readable == 1)
+		FMT_OUTPUT = FMT_ICMP_TIMESTAMP_MACHINE;
+	else {
+		fprintf(stderr, "Error: No output formatting matched - exiting");
+		exit(1);
+	}
+
+	if (args->print_timestamps == 1 && args->machine_readable == 0)
+		FMT_TIMESTAMP = FMT_TIMESTAMPS_HUMAN;
+	else if (args->print_timestamps == 1 && args->machine_readable == 1)
+		FMT_TIMESTAMP = FMT_TIMESTAMPS_MACHINE;
 
 	while (1)
 	{
@@ -166,12 +200,9 @@ void * receiver_loop(void *data)
 
 				rtt = result.finishedTime - result.originateTime;
 
-				if (args->machine_readable) {
-					printf("%s,%u,%d\n", ip, result.sequence, rtt);
-				}
-				else {
-					printf("%-15s : [%u], %d ms\n", ip, result.sequence, rtt);
-				}
+				if (args->print_timestamps)
+					print_timestamp(FMT_TIMESTAMP);
+				printf(FMT_OUTPUT, ip, result.sequence, rtt);
 
 				receivedICMP++;
 
@@ -189,22 +220,9 @@ void * receiver_loop(void *data)
 				int32_t up_time = result.receiveTime - result.originateTime;
 				rtt = result.finishedTime - result.originateTime;
 
-				if (args->machine_readable) {
-					if (args->print_timestamps) {
-						struct timeval recv_time;
-						gettimeofday(&recv_time, NULL);
-						printf("%lu.%06lu,", (unsigned long)recv_time.tv_sec, (unsigned long)recv_time.tv_usec);
-					}
-					printf("%s,%u,%u,%u,%u,%u,%d,%d,%d\n", ip, result.sequence, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime, rtt, down_time, up_time);
-				}
-				else {
-					if (args->print_timestamps) {
-						struct timeval recv_time;
-						gettimeofday(&recv_time, NULL);
-						printf("[%lu.%06lu] ", (unsigned long)recv_time.tv_sec, (unsigned long)recv_time.tv_usec);
-					}
-					printf("%-15s : [%u] Down: %d, Up: %d, RTT: %d, Originate: %u, Received: %u, Transmit: %u, Finished: %u\n", ip, result.sequence, down_time, up_time, rtt, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime);
-				}
+				if (args->print_timestamps)
+					print_timestamp(FMT_TIMESTAMP);
+				printf(FMT_OUTPUT, ip, result.sequence, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime, rtt, down_time, up_time);
 
 				receivedICMP++;
 
