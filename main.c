@@ -326,7 +326,7 @@ int main (int argc, char **argv)
 	arguments.delimiter = ',';
 	arguments.fw_mark = 0;
 	arguments.icmp_type = 13; // ICMP timestamps
-	arguments.interface = "";
+	arguments.interface = NULL;
 	arguments.machine_readable = 0;
 	arguments.print_timestamps = 0;
 	arguments.sleep_time = 100;
@@ -363,7 +363,7 @@ int main (int argc, char **argv)
 		}
 	}
 
-	if (strlen(arguments.interface) > 0) {
+	if (arguments.interface != NULL) {
 		int err = setsockopt(sock_fd, SOL_SOCKET, SO_BINDTODEVICE, arguments.interface, strlen(arguments.interface));
 
 		if (err != 0) {
