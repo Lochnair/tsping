@@ -1,4 +1,4 @@
-project('tsping', 'c', version: '0.1')
+project('tsping', 'c', version: '0.2.0')
 
 add_project_arguments('-D_GNU_SOURCE', language: 'c')
 
