@@ -10,6 +10,10 @@
 
 #include "tsping.h"
 
+#ifndef _TSPING_VERSION
+#define _TSPING_VERSION "0.0.0"
+#endif
+
 unsigned long sentICMP = 0;
 unsigned long receivedICMP = 0;
 
@@ -337,7 +341,7 @@ int main (int argc, char **argv)
 	if (ret != 0)
 		return ret;
 
-	fprintf(stderr, "Starting tsping 0.1 - pinging %u targets\n", arguments.targets_len);
+	fprintf(stderr, "Starting tsping %s - pinging %u targets\n", _TSPING_VERSION, arguments.targets_len);
 
 	pthread_t receiver_thread;
 	pthread_t sender_thread;

@@ -2,6 +2,8 @@ project('tsping', 'c', version: '0.1')
 
 add_project_arguments('-D_GNU_SOURCE', language: 'c')
 
+add_project_arguments('-D_TSPING_VERSION="' + meson.project_version() + '"', language: 'c')
+
 deps = [dependency('threads')]
 
 argp_test = '''
