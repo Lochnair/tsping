@@ -101,6 +101,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
 		
 		case ARGP_KEY_ARG:
 			arguments->targets = realloc(arguments->targets, (arguments->targets_len + 1) * sizeof(struct sockaddr_in));
+			arguments->targets[arguments->targets_len].sin_family = AF_INET;
+			arguments->targets[arguments->targets_len].sin_port = 0;
 
 			if (inet_pton(AF_INET, arg, &arguments->targets[arguments->targets_len].sin_addr) != 1) {
 				printf("Invalid IP address: %s\n", arg);
