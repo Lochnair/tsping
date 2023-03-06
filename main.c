@@ -374,6 +374,13 @@ int main (int argc, char **argv)
 		}
 	}
 
+	// disable buffering on stdout
+	if (setvbuf(stdout, NULL, _IONBF, 0) != 0)
+    {
+        perror("Something wen't wrong while disabling buffering on standard output");
+        return EXIT_FAILURE;
+    }
+
 	struct thread_data data;
 	data.args = &arguments;
 	data.id = htons(getpid() & 0xFFFF);
