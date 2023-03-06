@@ -69,7 +69,14 @@ int send_icmp_echo_request(int sock_fd, struct sockaddr_in *reflector, int id, i
 
 	if ((t = sendto(sock_fd, &hdr, sizeof(hdr), 0, (const struct sockaddr *)reflector, sizeof(*reflector))) == -1)
 	{
-		fprintf(stderr, "Something went wrong while sending: %d\n", t);
+		char ip[INET_ADDRSTRLEN];
+		
+		int err = errno;
+
+		if (inet_ntop(AF_INET, &(reflector->sin_addr), ip, INET_ADDRSTRLEN) == NULL)
+			fprintf(stderr, "Something went wrong while sending: %s\n", strerror(err));
+		else
+			fprintf(stderr, "Something went wrong while sending to %s: %s\n", ip, strerror(err));
 		return 1;
 	}
 
@@ -93,7 +100,14 @@ int send_icmp_timestamp_request(int sock_fd, struct sockaddr_in *reflector, int 
 
 	if ((t = sendto(sock_fd, &hdr, sizeof(hdr), 0, (const struct sockaddr *)reflector, sizeof(*reflector))) == -1)
 	{
-		fprintf(stderr, "Something went wrong while sending: %d\n", t);
+		char ip[INET_ADDRSTRLEN];
+		
+		int err = errno;
+
+		if (inet_ntop(AF_INET, &(reflector->sin_addr), ip, INET_ADDRSTRLEN) == NULL)
+			fprintf(stderr, "Something went wrong while sending: %s\n", strerror(err));
+		else
+			fprintf(stderr, "Something went wrong while sending to %s: %s\n", ip, strerror(err));
 		return 1;
 	}
 
@@ -196,6 +210,7 @@ void * receiver_loop(void *data)
 		int recv = recvfrom(sock_fd, buff, 100, 0, (struct sockaddr *) &remote_addr, &addr_len);
 
 		if (recv < 0) {
+			perror("Error while reading from socket: ");
 			goto skip;
 		}
 
@@ -352,7 +367,7 @@ int main (int argc, char **argv)
 
 	if ((sock_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) == -1)
 	{
-		printf("Couldn't open raw socket (are you root?)\n");
+		perror("Couldn't open raw socket (are you root?)\n");
 		return 1;
 	}
 
@@ -386,16 +401,15 @@ int main (int argc, char **argv)
 	data.id = htons(getpid() & 0xFFFF);
 	data.sock_fd = sock_fd;
 
-	int t;
-	if ((t = pthread_create(&receiver_thread, NULL, receiver_loop, (void *)&data)) != 0)
+	if (pthread_create(&receiver_thread, NULL, receiver_loop, (void *)&data) != 0)
 	{
-		fprintf(stderr, "Failed to create receiver thread: %d\n", t);
+		perror("Failed to create receiver thread: ");
 		return 1;
 	}
 
-	if ((t = pthread_create(&sender_thread, NULL, sender_loop, (void *)&data)) != 0)
+	if (pthread_create(&sender_thread, NULL, sender_loop, (void *)&data) != 0)
 	{
-		fprintf(stderr, "Failed to create sender thread: %d\n", t);
+		perror("Failed to create receiver thread: ");
 		return 1;
 	}
 
