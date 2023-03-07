@@ -40,7 +40,7 @@ unsigned long get_time_since_midnight_ms()
 
 unsigned short calculate_checksum(void *b, int len)
 {
-	unsigned short *buf = b;
+	unsigned short *buf = (unsigned short *) b;
 	unsigned int sum = 0;
 	unsigned short result;
 
@@ -56,9 +56,11 @@ unsigned short calculate_checksum(void *b, int len)
 
 int send_icmp_echo_request(int sock_fd, struct sockaddr_in *reflector, int id, int seq)
 {
-	struct icmp_echo_hdr hdr = {0};
+	struct icmp_echo_hdr hdr;
 
 	hdr.type = ICMP_ECHO;
+	hdr.checksum = 0;
+	hdr.code = 0;
 	hdr.identifier = id;
 	hdr.sequence = seq;
 	hdr.payload = htonl(get_time_since_midnight_ms());
@@ -87,12 +89,16 @@ int send_icmp_echo_request(int sock_fd, struct sockaddr_in *reflector, int id, i
 
 int send_icmp_timestamp_request(int sock_fd, struct sockaddr_in *reflector, int id, int seq)
 {
-	struct icmp_timestamp_hdr hdr = {0};
+	struct icmp_timestamp_hdr hdr;
 
 	hdr.type = ICMP_TIMESTAMP;
+	hdr.checksum = 0;
+	hdr.code = 0;
 	hdr.identifier = id;
 	hdr.sequence = seq;
 	hdr.originateTime = htonl(get_time_since_midnight_ms());
+	hdr.receiveTime = 0;
+	hdr.transmitTime = 0;
 
 	hdr.checksum = calculate_checksum(&hdr, sizeof(hdr));
 
@@ -130,6 +136,8 @@ int parse_icmp_echo_reply(uint16_t id, char * buff, int len, int recv, icmp_resu
 	result->sequence = ntohs(hdr->sequence);
 	result->originateTime = ntohl(hdr->payload);
 	result->finishedTime = get_time_since_midnight_ms();
+	result->receiveTime = 0;
+	result->transmitTime = 0;
 
 	return 0;
 }
@@ -204,7 +212,7 @@ void * receiver_loop(void *data)
 
 	while (1)
 	{
-		char * buff = malloc(100);
+		char * buff = (char *) malloc(100);
 		struct sockaddr_in remote_addr;
 		socklen_t addr_len = sizeof(remote_addr);
 		int recv = recvfrom(sock_fd, buff, 100, 0, (struct sockaddr *) &remote_addr, &addr_len);
@@ -220,7 +228,7 @@ void * receiver_loop(void *data)
 		int len = (*buff & 0x0F) * 4;
 		char * hdr = (char *) (buff + len);
 
-		icmp_result result = {0};
+		icmp_result result;
 
 		char ip[INET_ADDRSTRLEN];
 		inet_ntop(AF_INET, &(remote_addr.sin_addr), ip, INET_ADDRSTRLEN);
@@ -348,7 +356,7 @@ int main (int argc, char **argv)
 	arguments.print_timestamps = 0;
 	arguments.sleep_time = 100;
 	arguments.target_spacing = 0;
-	arguments.targets = malloc(sizeof(struct sockaddr_in));
+	arguments.targets = (struct sockaddr_in *) malloc(sizeof(struct sockaddr_in));
 	arguments.targets_len = 0;
 
 	/* Parse our arguments; every option seen by parse_opt will

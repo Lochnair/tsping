@@ -2,6 +2,7 @@
 #include <arpa/inet.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include "strtonum.h"
 
 static char doc[] =
@@ -41,7 +42,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
 	/* Get the input argument from argp_parse, which we
 	   know is a pointer to our arguments structure. */
-	struct arguments *arguments = state->input;
+	struct arguments *arguments = (struct arguments *) state->input;
     const char * errstr;
 
 	switch (key)
@@ -100,7 +101,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			break;
 		
 		case ARGP_KEY_ARG:
-			arguments->targets = realloc(arguments->targets, (arguments->targets_len + 1) * sizeof(struct sockaddr_in));
+			arguments->targets = (struct sockaddr_in *) realloc(arguments->targets, (arguments->targets_len + 1) * sizeof(struct sockaddr_in));
 			arguments->targets[arguments->targets_len].sin_family = AF_INET;
 			arguments->targets[arguments->targets_len].sin_port = 0;
 
