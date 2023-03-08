@@ -67,9 +67,7 @@ int send_icmp_echo_request(int sock_fd, struct sockaddr_in *reflector, int id, i
 
 	hdr.checksum = calculate_checksum(&hdr, sizeof(hdr));
 
-	int t;
-
-	if ((t = sendto(sock_fd, &hdr, sizeof(hdr), 0, (const struct sockaddr *)reflector, sizeof(*reflector))) == -1)
+	if (sendto(sock_fd, &hdr, sizeof(hdr), 0, (const struct sockaddr *)reflector, sizeof(*reflector)) == -1)
 	{
 		char ip[INET_ADDRSTRLEN];
 		
@@ -102,9 +100,7 @@ int send_icmp_timestamp_request(int sock_fd, struct sockaddr_in *reflector, int 
 
 	hdr.checksum = calculate_checksum(&hdr, sizeof(hdr));
 
-	int t;
-
-	if ((t = sendto(sock_fd, &hdr, sizeof(hdr), 0, (const struct sockaddr *)reflector, sizeof(*reflector))) == -1)
+	if (sendto(sock_fd, &hdr, sizeof(hdr), 0, (const struct sockaddr *)reflector, sizeof(*reflector)) == -1)
 	{
 		char ip[INET_ADDRSTRLEN];
 		
@@ -183,7 +179,7 @@ void * receiver_loop(void *data)
 	char FMT_TIMESTAMPS_MACHINE[] = "%lu.%06lu,";
 
 	char * FMT_OUTPUT;
-	char * FMT_TIMESTAMP;
+	char * FMT_TIMESTAMP = NULL;
 
 	if (args->icmp_type == 8 && args->machine_readable == 0)
 		FMT_OUTPUT = FMT_ICMP_ECHO_HUMAN;
@@ -247,7 +243,7 @@ void * receiver_loop(void *data)
 
 				rtt = result.finishedTime - result.originateTime;
 
-				if (args->print_timestamps)
+				if (FMT_TIMESTAMP != NULL)
 					print_timestamp(FMT_TIMESTAMP);
 				printf(FMT_OUTPUT, ip, result.sequence, rtt);
 
@@ -267,7 +263,7 @@ void * receiver_loop(void *data)
 				int32_t up_time = result.receiveTime - result.originateTime;
 				rtt = result.finishedTime - result.originateTime;
 
-				if (args->print_timestamps)
+				if (FMT_TIMESTAMP != NULL)
 					print_timestamp(FMT_TIMESTAMP);
 				printf(FMT_OUTPUT, ip, result.sequence, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime, rtt, down_time, up_time);
 
