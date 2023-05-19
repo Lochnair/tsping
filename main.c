@@ -173,7 +173,7 @@ void * receiver_loop(void *data)
 
 	char FMT_ICMP_ECHO_HUMAN[] = "%-15s : [%u], %d ms\n";
 	char FMT_ICMP_ECHO_MACHINE[] = "%s,%u,%d\n";
-	char FMT_ICMP_TIMESTAMP_HUMAN[] = "%-15s : [%u] Originate: %u, Received: %u, Transmit: %u, Finished: %u, RTT: %d, Down: %d, Up: %d,\n";
+	char FMT_ICMP_TIMESTAMP_HUMAN[] = "%-15s : [%u] Originate: %u, Received: %u, Transmit: %u, Finished: %u, RTT: %d, Down: %d, Up: %d\n";
 	char FMT_ICMP_TIMESTAMP_MACHINE[] = "%s,%u,%u,%u,%u,%u,%d,%d,%d\n";
 	char FMT_TIMESTAMPS_HUMAN[] = "[%lu.%06lu] ";
 	char FMT_TIMESTAMPS_MACHINE[] = "%lu.%06lu,";
