@@ -2,6 +2,7 @@
 #include <arpa/inet.h>
 #include <netinet/ip_icmp.h>
 #include <pthread.h>
+#include <signal.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -243,9 +244,11 @@ void * receiver_loop(void *data)
 
 				rtt = result.finishedTime - result.originateTime;
 
+				pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 				if (FMT_TIMESTAMP != NULL)
 					print_timestamp(FMT_TIMESTAMP);
 				printf(FMT_OUTPUT, ip, result.sequence, rtt);
+				pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
 				receivedICMP++;
 
@@ -263,9 +266,11 @@ void * receiver_loop(void *data)
 				int32_t up_time = result.receiveTime - result.originateTime;
 				rtt = result.finishedTime - result.originateTime;
 
+				pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 				if (FMT_TIMESTAMP != NULL)
 					print_timestamp(FMT_TIMESTAMP);
 				printf(FMT_OUTPUT, ip, result.sequence, result.originateTime, result.receiveTime, result.transmitTime, result.finishedTime, rtt, down_time, up_time);
+				pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
 				receivedICMP++;
 
@@ -400,6 +405,16 @@ int main (int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+	// Create a list of signals to block on
+	sigset_t set;
+	sigemptyset(&set);
+	sigaddset(&set, SIGHUP);
+    sigaddset(&set, SIGINT);
+	sigaddset(&set, SIGTERM);
+
+	// Block the signals in the set
+    sigprocmask(SIG_BLOCK, &set, NULL);
+
 	struct thread_data data;
 	data.args = &arguments;
 	data.id = htons(getpid() & 0xFFFF);
@@ -420,9 +435,31 @@ int main (int argc, char **argv)
 	pthread_setname_np(receiver_thread, "receiver");
 	pthread_setname_np(sender_thread, "sender");
 
-	// Wait for threads to shut down
-	pthread_join(receiver_thread, NULL);
-	pthread_join(sender_thread, NULL);
+	// Wait for signal to shut down
+	int sig;
+    sigwait(&set, &sig);
+
+	// Stop sender thread
+	if (pthread_cancel(sender_thread) != 0)
+	{
+		perror("Failed to cancel sender thread: ");
+	}
+	
+	if (pthread_join(sender_thread, NULL) != 0)
+	{
+		perror("Failed to join sender thread: ");
+	}
+
+	// Stop receiver thread
+	if (pthread_cancel(receiver_thread) != 0)
+	{
+		perror("Failed to cancel receiver thread: ");
+	}
+
+	if (pthread_join(receiver_thread, NULL) != 0)
+	{
+		perror("Failed to join receiver thread: ");
+	}
 
 	return 0;
 }
